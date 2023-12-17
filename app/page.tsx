@@ -7,7 +7,7 @@ import { useToast } from '@/components/ui/use-toast';
 import Image from 'next/image'
 import { useState } from 'react'
 
-export const URL_FAUCET = 'https://faucet-ebonynw.line-apps.com/credit'
+const URL_FAUCET = 'https://faucet-ebonynw.line-apps.com/credit'
 
 const isValidAddress = (addr: string) => /^tlink1/.test(addr)
 
