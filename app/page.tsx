@@ -5,7 +5,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/components/ui/use-toast';
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useChainWallet } from '@cosmos-kit/react'
 
 const URL_FAUCET = 'https://faucet-ebonynw.line-apps.com/credit'
 
@@ -14,9 +15,15 @@ const isValidAddress = (addr: string) => /^tlink1/.test(addr)
 export default function Home() {
   const [addr, setAddr] = useState('');
   const { toast } = useToast();
+  const chainWalletCxt = useChainWallet('ebony', 'keplr-extension', false);
+
+  useEffect(() => {
+    if(chainWalletCxt.address) {
+      setAddr(chainWalletCxt.address);
+    }  
+  }, [chainWalletCxt]);
 
   async function handleFaucetRequest() {
-    console.log('handleFaucetRequest', isValidAddress(addr));
     const resp = await fetch(URL_FAUCET, {
         method: "POST",
         headers: {
@@ -52,18 +59,31 @@ export default function Home() {
           </p>
           <div className='p-6'>
             <div className='flex flex-col gap-4'>
-              <label
-                htmlFor='walletAddress'
-                className='text-sm font-medium text-gray-900 dark:text-white'>주소</label>
+              <div className='flex'>
+                <label
+                  htmlFor='walletAddress'
+                  className='pt-4 align-middle grow text-sm font-medium text-gray-900 dark:text-white'>수신인</label>
+                {
+                  chainWalletCxt.isWalletDisconnected ? <Button onClick={() => chainWalletCxt.connect()}>케플러 연결</Button> : null
+                }
+                {
+                  chainWalletCxt.isWalletConnecting ? <Button>케플러 연결중</Button> : null
+                }
+                {
+                  chainWalletCxt.isWalletConnected ? <Button onClick={() => chainWalletCxt.disconnect()}>케플러 해제</Button> : null
+                }
+
+              </div>
               <Input
                 className='w-full bg-gray-100 dark:bg-gray-950'
                 id='walletAddress'
                 placeholder='tlink1????'
                 value={addr}
+                disabled={!!chainWalletCxt.address}
                 onChange={e => setAddr(e.target.value)}
               />
               <Button onClick={handleFaucetRequest}>
-                10TFNSA 주세요
+                10TFNSA 요청
               </Button>
             </div>
           </div>
